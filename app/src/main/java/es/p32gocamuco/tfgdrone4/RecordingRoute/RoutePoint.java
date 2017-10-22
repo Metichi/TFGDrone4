@@ -2,6 +2,7 @@ package es.p32gocamuco.tfgdrone4.RecordingRoute;
 
 import android.location.Location;
 import android.support.annotation.FloatRange;
+import android.support.annotation.Nullable;
 
 import java.io.Serializable;
 
@@ -19,8 +20,7 @@ import static java.lang.Math.toDegrees;
  * It contains bearing, pitch and distance to point of interest information, in order to set
  * the camera.
  * It defines the action taken at this point as well.
- * @author Manuel Gómez Castro
- * @version %I%, %G%
+ * @author Manuel Gomez Castro
  */
 
 public class RoutePoint extends Target implements Serializable{
@@ -30,6 +30,7 @@ public class RoutePoint extends Target implements Serializable{
     private double bearing;
     private double focalDistance;
     private Actions action;
+    private Target associatedTarget;
 
     //region Constructors
 
@@ -42,6 +43,7 @@ public class RoutePoint extends Target implements Serializable{
         this.bearing = 0;
         this.focalDistance = 0;
         this.action = Actions.NOTHING;
+        this.associatedTarget = null;
     }
 
     /**
@@ -56,6 +58,7 @@ public class RoutePoint extends Target implements Serializable{
         this.bearing = 0;
         this.focalDistance = 0;
         this.action = Actions.NOTHING;
+        this.associatedTarget = target;
     }
     //endregion
 
@@ -98,9 +101,29 @@ public class RoutePoint extends Target implements Serializable{
         return action;
     }
 
+    /**
+     * This method returns the Target associated to this RoutePoint.
+     * The associated target is the point of interest of this RoutePoint and the element that has
+     * prompted its generation.
+     * @return Associated Target.
+     */
+    public Target getAssociatedTarget() {
+        return associatedTarget;
+    }
+
     //endregion
 
     //region Setters
+
+
+    /**
+     * Sets the associated target.
+     * The target can be deleted by setting to null.
+     * @param associatedTarget Associated target.
+     */
+    public void setAssociatedTarget(@Nullable Target associatedTarget) {
+        this.associatedTarget = associatedTarget;
+    }
 
     /**
      * Sets the pitch of the camera.

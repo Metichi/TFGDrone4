@@ -15,8 +15,7 @@ import java.io.Serializable;
  * Each target will also have an active time, that should be exactly the length as the sume of all the active
  * times of its associated RoutePoints and the travel time between them.
  *
- * @author Manuel Gómez Castro
- * @version %I%, %G%
+ * @author Manuel Gomez Castro
  */
 
 public class Target implements Serializable {
