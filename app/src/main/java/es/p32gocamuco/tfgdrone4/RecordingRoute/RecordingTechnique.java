@@ -262,6 +262,11 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         }
         return activeTime;
     }
+
+    public void setListener(OnTechniqueChangeListener listener) {
+        this.listener = listener;
+    }
+
     /**
      * This interface defines a listener for any changes on the Technique.
      * The technique will change after its creation to add new Targets, generate new RoutePoints, or
