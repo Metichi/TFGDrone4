@@ -34,6 +34,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         this.targets = new ArrayList<>(0);
         this.routePoints = new ArrayList<>(0);
         this.listener = null;
+        this.targetRoutePointsHashMap = new HashMap<>();
     }
 
     /**
@@ -272,8 +273,11 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         void onNewTarget(Target target);
         void onTargetChanged(Target target);
         void onTargetDeleted(Target target);
+
         void onNewRoutePoint(RoutePoint routePoint);
         void onRoutePointChanged(RoutePoint routePoint);
         void onRoutePointDeleted(RoutePoint routePoint);
+
+        void onTechniqueParametersChanged(RecordingTechnique recordingTechnique);
     }
 }
