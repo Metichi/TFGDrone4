@@ -8,6 +8,7 @@ import java.io.Serializable;
 
 import static java.lang.Math.atan;
 import static java.lang.Math.pow;
+import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
 
@@ -31,6 +32,7 @@ public class RoutePoint extends Target implements Serializable{
     private double focalDistance;
     private Actions action;
     private Target associatedTarget;
+    private Rotation rotation;
 
     //region Constructors
 
@@ -59,6 +61,7 @@ public class RoutePoint extends Target implements Serializable{
         this.focalDistance = 0;
         this.action = Actions.NOTHING;
         this.associatedTarget = target;
+        this.rotation = Rotation.SHORT;
     }
     //endregion
 
@@ -111,6 +114,33 @@ public class RoutePoint extends Target implements Serializable{
         return associatedTarget;
     }
 
+    /**
+     * Returns the rotation direction of the aircraft when heading to the next RoutePoint.
+     * @return Direction of the rotation.
+     * @see Rotation
+     */
+    public Rotation getRotation() {
+        return rotation;
+    }
+
+    public boolean getClockwiseTowards(RoutePoint destination){
+        switch (rotation){
+            case CLOCKWISE:
+                return true;
+            case COUNTERCLOCKWISE:
+                return false;
+            default:
+                double clockwiseDistance = destination.getBearing()-getBearing();
+                boolean clockwise = (clockwiseDistance >= 0);
+                if (Math.abs(clockwiseDistance)>180){
+                    clockwise = !clockwise;
+                }
+                if(this.getRotation() == Rotation.LONG){
+                    clockwise = !clockwise;
+                }
+                return clockwise;
+        }
+    }
     //endregion
 
     //region Setters
@@ -146,6 +176,17 @@ public class RoutePoint extends Target implements Serializable{
         if (getOnChangeListener() != null){
             getOnChangeListener().onChange(this);
         }
+    }
+
+    /**
+     * Sets the rotation direction that the aircraft will take to reach the next routePoint.
+     * The rotation can either be specifically specified with clockwise or counterclockwise.
+     * Or it can be defined by either a short angle (Lesser than 180) or long angle (greater than 180),
+     * turning in the direction needed to cover it.
+     * @param rotation Direction of the rotation.
+     */
+    public void setRotation(Rotation rotation) {
+        this.rotation = rotation;
     }
 
     /**
@@ -233,6 +274,29 @@ public class RoutePoint extends Target implements Serializable{
     }
 
     /**
+     * This method calculates the rotation angle needed to reach the bearing of the destination.
+     * This RoutePoint will rotate in a direction (clockwise or counterclockwise) defined by {@link RoutePoint#getClockwiseTowards(RoutePoint)}.
+     * The angle should be a value greater or equal to 0 but lesser than 360.
+     * @param destination Objective bearing to get.
+     * @return Length of the rotation in degrees in absolute value.
+     */
+    public double calculateRotationDistanceTo(RoutePoint destination){
+        boolean clockwise = this.getClockwiseTowards(destination);
+        double distance;
+        if (clockwise){
+            distance = destination.getBearing()-this.getBearing();
+        } else {
+            distance = this.getBearing() - destination.getBearing();
+        }
+
+        if (distance < 0){
+            distance += 360;
+        }
+
+        return distance;
+    }
+
+    /**
      * Calculates the pitch needed so the camera points towards the Target.
      * If the Target is over the RoutePoint, the pitch will be 0.
      * If the Target has the same coordinates as the RoutePoint and is under it, it will be -90.
@@ -271,6 +335,19 @@ public class RoutePoint extends Target implements Serializable{
         }
     }
 
+    /**
+     * Possible ways to rotate to change the bearing.
+     * Short: Covering the minimum angle.
+     * Long: Covering the maximum angle.
+     * Clockwise: Increasing the bearing value.
+     * CounterClockwise: Decreasing the bearing value.
+     */
+    public enum Rotation{
+        SHORT,
+        LONG,
+        CLOCKWISE,
+        COUNTERCLOCKWISE
+    }
     /**
      * List of possible actions for a RoutePoint to take.
      */

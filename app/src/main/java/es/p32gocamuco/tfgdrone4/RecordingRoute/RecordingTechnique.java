@@ -54,7 +54,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
      * Route using {@link RecordingTechnique#addRoutePoint(RoutePoint)}.
      * The target is added to the end of the target list. Its active time will be set to match that
      * of its RoutePoints.
-     * The method {@link OnTechniqueChangeListener#onNewTarget(Target)} will be called
+     * The method {@link OnTechniqueChangeListener#onNewTarget(Target, RecordingTechnique)} will be called
      * if a listener has been set.
      * This technique will be set as the Targets {@link es.p32gocamuco.tfgdrone4.RecordingRoute.Target.OnChangeListener}
      *
@@ -77,14 +77,14 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         target.setOnChangeListener(this);
 
         if(this.listener != null){
-            this.listener.onNewTarget(target);
+            this.listener.onNewTarget(target,this);
         }
     }
 
     /**
      * This method adds a RoutePoint to the technique.
      * The Routepoint will be added to the end of the RoutePoint list.
-     * The method {@link OnTechniqueChangeListener#onNewRoutePoint(RoutePoint)} will be called if a
+     * The method {@link OnTechniqueChangeListener#onNewRoutePoint(RoutePoint, RecordingTechnique)} will be called if a
      * listener is set.
      * This technique will be set as the RoutePoint's {@link es.p32gocamuco.tfgdrone4.RecordingRoute.Target.OnChangeListener}
      * @param routePoint RoutePoint to add.
@@ -93,7 +93,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         this.routePoints.add(routePoint);
         routePoint.setOnChangeListener(this);
         if(this.listener != null){
-            this.listener.onNewRoutePoint(routePoint);
+            this.listener.onNewRoutePoint(routePoint,this);
         }
     }
 
@@ -108,7 +108,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         this.routePoints.add(index, routePoint);
         routePoint.setOnChangeListener(this);
         if(this.listener != null){
-            this.listener.onNewRoutePoint(routePoint);
+            this.listener.onNewRoutePoint(routePoint,this);
         }
     }
     //endregion
@@ -118,7 +118,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
     /**
      * Removes a target from the technique.
      * Calling this method will also remove its associated RoutePoints.
-     * Calling this method will trigger {@link OnTechniqueChangeListener#onTargetDeleted(Target)} if
+     * Calling this method will trigger {@link OnTechniqueChangeListener#onTargetDeleted(Target, RecordingTechnique)} if
      * the listener is defined.
      * @param target Target to delete.
      */
@@ -130,7 +130,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
             removeRoutePoint(routePoint);
         }
         if (this.listener != null){
-            this.listener.onTargetDeleted(target);
+            this.listener.onTargetDeleted(target,this);
         }
     }
 
@@ -138,7 +138,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
      * Removes a RoutePoint from the technique.
      * Calling this method will remove the RoutePoint from both the RoutePoint general list and its
      * association to a target.
-     * Calling this method will trigger {@link OnTechniqueChangeListener#onRoutePointDeleted(RoutePoint)} if
+     * Calling this method will trigger {@link OnTechniqueChangeListener#onRoutePointDeleted(RoutePoint, RecordingTechnique)} if
      * the listener is defined.
      * @param routePoint RoutePoint to delete.
      */
@@ -149,7 +149,7 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         routePoint.setAssociatedTarget(null);
 
         if(this.listener != null){
-            this.listener.onRoutePointDeleted(routePoint);
+            this.listener.onRoutePointDeleted(routePoint,this);
         }
     }
     //endregion
@@ -168,12 +168,12 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         if (target instanceof RoutePoint){
             onRoutePointChanged((RoutePoint) target);
             if (this.listener != null){
-                this.listener.onRoutePointChanged((RoutePoint) target);
+                this.listener.onRoutePointChanged((RoutePoint) target,this);
             }
         } else {
             onTargetChanged(target);
             if (this.listener != null){
-                this.listener.onTargetChanged(target);
+                this.listener.onTargetChanged(target,this);
             }
         }
     }
@@ -214,6 +214,9 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
         Target associatedTarget = routePoint.getAssociatedTarget();
         double activeTime = calculateActiveTimeOf(associatedTarget);
         associatedTarget.setActiveTime(activeTime);
+        if(getRoutePoints(associatedTarget).indexOf(routePoint)==0){
+            associatedTarget.setTravelTime(routePoint.getTravelTime());
+        }
     }
     //endregion
     //region Getters
@@ -275,13 +278,13 @@ public abstract class RecordingTechnique implements Serializable, Target.OnChang
      * date.
      */
     public interface OnTechniqueChangeListener{
-        void onNewTarget(Target target);
-        void onTargetChanged(Target target);
-        void onTargetDeleted(Target target);
+        void onNewTarget(Target target, RecordingTechnique technique);
+        void onTargetChanged(Target target, RecordingTechnique technique);
+        void onTargetDeleted(Target target, RecordingTechnique technique);
 
-        void onNewRoutePoint(RoutePoint routePoint);
-        void onRoutePointChanged(RoutePoint routePoint);
-        void onRoutePointDeleted(RoutePoint routePoint);
+        void onNewRoutePoint(RoutePoint routePoint, RecordingTechnique technique);
+        void onRoutePointChanged(RoutePoint routePoint, RecordingTechnique technique);
+        void onRoutePointDeleted(RoutePoint routePoint, RecordingTechnique technique);
 
         void onTechniqueParametersChanged(RecordingTechnique recordingTechnique);
     }
